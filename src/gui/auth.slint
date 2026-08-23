@@ -1,0 +1,158 @@
+import {Logic, Color, Enabled} from "logic.slint";
+import { Button } from "std-widgets.slint";
+export component Auth inherits Rectangle{
+    z: 1;
+    width: 360px;
+    height: 480px;
+    opacity: Enabled.all_auth_button ? 1.0 : 0.0;
+    animate opacity {duration: 200ms; easing: ease-in-out;}
+
+    Rectangle {
+        width: 1005px;
+        height: 563px;
+        background: Color.background;
+        opacity: 0.75;
+    }
+    Rectangle {
+        background: Color.background;
+        border-radius: 20px;
+        border-color: Color.primary;
+        border-width: 0.5px;
+    }
+
+    Rectangle {
+        x: parent.width - self.width - 30px;
+        y: 30px;
+        width: 20px;
+        height: 20px;
+        clip: true;
+
+        TouchArea {
+            width: parent.width;
+            height: parent.height;
+            enabled: Enabled.all_auth_button;
+            clicked => {
+                Enabled.all_auth_button = false;
+                Enabled.global_button = true;
+                debug("auth exit")
+            }
+            Image {
+                source: @image-url("image/exit.png");
+                width: 100%;
+                height: 100%;
+            }
+        }
+    }
+
+
+    Rectangle {
+        z:2;
+        Text {
+            x: 40px;
+            y: 100px;
+            text:"Никнейм";
+            color: Color.qwer;
+            }
+        Text{
+            x: 40px;
+            y: 215px;
+            text: "Пароль";
+            color: Color.qwer;
+            }
+        Text {
+            x: 195px;
+            y: 400px;
+            text: "Авторизоваться";
+            }
+        Text {
+            x: 30px;
+            y: 400px;
+            text: "Создать аккаунт";
+            color: Color.qwer;
+        }
+        Text{
+            x: 30px;
+            y: 330px;
+            text <=> Logic.login_information_output;
+            color: Color.error;
+        }
+    }
+
+    Rectangle {
+        x: 30px;
+        y: 125px;
+        width: 300px;
+        height: 60px;
+        background: Color.background;
+        border-radius: 16px;
+        border-color: Color.qwer;
+        border-width: 0.5px;
+
+        TextInput {
+            x: 10px;
+            font-size: 16px;
+            text <=> Logic.username;
+            width: max(parent.width, self.preferred-width);
+            vertical-alignment: center;
+
+        }
+    }
+
+    Rectangle {
+        x: 30px;
+        y: 240px;
+        width: 300px;
+        height: 60px;
+        background: Color.background;
+        border-radius: 16px;
+        border-color: Color.qwer;
+        border-width: 0.5px;
+
+        TextInput {
+            x: 10px;
+            font-size: 14px;
+            text <=> Logic.password;
+            input-type: password;
+            width: max(parent.width, self.preferred-width);
+            vertical-alignment: center;
+        }
+    }
+
+    Rectangle {
+        x:180px;
+        y:390px;
+        width: 150px;
+        height: 40px;
+        background: Color.primary;
+        border-radius: 20px;
+        clip: true;
+
+        Button {
+            width: 100%;
+            height: 100%;
+            enabled: Enabled.all_auth_button;
+            clicked => {
+                debug("auth save button")
+            }
+        }
+    }
+
+    Rectangle {
+            x: 25px;
+            y: 395px;
+            width: 130px;
+            height: 30px;
+            clip: true;
+            //background: #ffffff;
+
+            TouchArea {
+                width: parent.width;
+                height: parent.height;
+                enabled: Enabled.all_auth_button;
+                clicked => {
+                    debug("creat auth")
+                }
+
+            }
+    }
+}

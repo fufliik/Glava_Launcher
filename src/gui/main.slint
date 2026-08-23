@@ -1,0 +1,117 @@
+import { Button } from "std-widgets.slint";
+import { Auth } from "auth.slint";
+import { Settings } from "settings.slint";
+import { Logic, Color, Enabled } from "logic.slint";
+export { Logic, Color, Enabled}
+
+
+export component MainWindow inherits Window{
+     z: 0;
+     max-width: 1005px;
+     min-width: 1005px;
+     max-height: 563px;
+     min-height: 563px;
+     title: "Glava Launcher";
+     icon: @image-url("image/ico.jpg");
+
+
+     //НАСТРОЙКИ
+     default-font-family: "Roboto";
+     default-font-size: 11pt;
+     default-font-weight: FontWeight.semi-bold;
+
+     //------------------------------------------------------
+
+     Image {
+        width: 100%;
+        height: 100%;
+        source: @image-url("image/bg.jpg");
+     }
+
+     Text {
+        x:100px; y:240px;
+        text: "TERA CREATE";
+        color: #ffffff;
+        font-size: 40pt;
+        font-weight: FontWeight.extra-bold;
+     }
+//ИГРАТь------------------------------------------------
+     Rectangle {
+        x:100px; y:330px;
+        width: 160px;
+        height: 60px;
+        background: Color.button_play;
+        border-radius: 16px;
+        clip: true;
+
+        Text {
+            text: Logic.button_play_status;
+            color: #ffffff;
+            font-size: 18px;
+            font-family: "Inter";
+            font-weight: FontWeight.bold;
+
+        }
+
+        Button {
+            width: 100%;
+            height: 100%;
+            enabled:  Enabled.button_play &&  Enabled.global_button;
+            text: "                              ";
+            icon: @image-url("image/play.png");
+            icon-size: 26px;
+
+             clicked => {
+                debug("button_play");
+                Logic.play_minecrat_process();
+             }
+        }
+     }
+//НАСТРОКИ------------------------------------------------
+    Rectangle {
+        x: 300px; y:330px;
+        width: 60px;
+        height: 60px;
+        background: Color.background;
+        border-radius: 16px;
+        clip: true;
+
+        Button {
+            width: 100%;
+            height: 100%;
+            icon: @image-url("image/settings.png");
+            icon-size: 26px;
+            enabled:  Enabled.global_button;
+            clicked => {
+                 Enabled.all_settings_button = true;
+                Enabled.global_button = false;
+                debug("setiings");
+            }
+        }
+    }
+    settings_window := Settings{}
+
+//АВТОРИЗАЦИЯ-------------------------------------------------
+    Rectangle {
+        x: 900px; y:50px;
+        width: 60px;
+        height: 60px;
+        background: Color.primary;
+        border-radius: 16px;
+        clip: true;
+
+        Button {
+            width: 100%;
+            height: 100%;
+            icon: @image-url("image/user.png");
+            icon-size: 26px;
+            enabled: Enabled.global_button;
+            clicked => {
+                Enabled.all_auth_button = true;
+                Enabled.global_button = false;
+                debug("auth");
+            }
+        }
+    }
+    auth_window := Auth{}
+}
