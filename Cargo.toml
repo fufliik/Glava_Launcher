@@ -7,6 +7,7 @@ edition = "2024"
 slint = "1.17.1"
 tokio = { version = "1.53.1", features = ["full"] }
 lyceris = "1.1.3"
+dirs = "7.0.0"
 
 [build-dependencies]
 slint-build = "1.17.1"

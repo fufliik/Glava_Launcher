@@ -1,0 +1,35 @@
+import { Logic, Color, Enabled } from "logic.slint";
+import { Button } from "std-widgets.slint";
+
+export component Bar inherits Rectangle {
+    z: 3;
+    width: 380px;
+    height: 60px;
+    //добавить позже анимацию также появление так как в душе не ебу как ето здаоть 
+
+    Rectangle {
+        background: Color.background;
+        border-radius: 20px;
+        border-color: Color.primary;
+        border-width: 0.5px;
+    }
+
+
+
+
+    Rectangle {
+
+        Text {
+            x: parent.width - self.width - 20px;
+            y: (parent.height - self.height) / 2;
+            horizontal-alignment: right;
+            text: Logic.test_bar;
+            color: Color.qwer;
+            }
+    }
+
+
+
+
+
+}
