@@ -1,14 +1,34 @@
-use crate::gui::PlayStatus::{Offline, Play, Update};
+use crate::gui::PlayStatus::{Play, Update};
 
 mod gui;
 mod minecraft;
 mod dir;
+mod auth;
+mod update;
 
 #[tokio::main]
 async fn main() -> Result<(), slint::PlatformError> {
     let ui = gui::App::new();
     eprintln!("start");
-    ui.play_status(Play, true);
+
+    match tokio::task::spawn_blocking(|| {
+        update::check();
+    }).await
+    {
+        Ok(info) => {
+            println!()
+        }
+        Err(e) => {
+            println!("Ошибка обновление: {}", e)
+        }
+    }
+
+    let user = auth::User::load().unwrap_or_default(); // нет файла или битый: пустой ник
+    ui.username(&user.username);                       // поле ввода заполнится само
+
+    gui::App::play_status(ui.ui_weak.clone(), Play, true);
+    ui.bind_auth();
+
     ui.minecraft_run();
     ui.run()
 

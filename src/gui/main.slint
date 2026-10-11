@@ -38,6 +38,7 @@ export component MainWindow inherits Window{
         font-weight: FontWeight.extra-bold;
      }
 //ИГРАТь------------------------------------------------
+    
      Rectangle {
         x:100px; y:330px;
         width: 160px;
@@ -64,8 +65,13 @@ export component MainWindow inherits Window{
             icon-size: 26px;
 
              clicked => {
-                debug("button_play");
-                Logic.play_minecrat_process();
+                 if (Logic.username == "") {
+                     Logic.login_information_output = "Введите никнейм";
+                     Enabled.all_auth_button = true;    
+                     Enabled.global_button = false;
+                 } else {
+                     Logic.play_minecrat_process();
+                 }
              }
         }
      }
@@ -116,11 +122,15 @@ export component MainWindow inherits Window{
         }
     }
     auth_window := Auth{}
-}
+
 
 //БАР-------------------------------------------------------
+    hotbar := Bar{}
 
 
+
+    
+}
 
 
 

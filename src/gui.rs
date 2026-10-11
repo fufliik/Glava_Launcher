@@ -1,5 +1,8 @@
 use crate::minecraft;
 use slint::Weak;
+use crate::gui::PlayStatus::Play;
+use crate::auth::User;
+
 slint::include_modules!();
 pub struct App {
     pub ui: MainWindow,
@@ -7,9 +10,8 @@ pub struct App {
 }
 pub enum PlayStatus{
     Play,
-    Offline,
+    Game,
     Update,
-    Loading,
 }
 
 impl PlayStatus{
@@ -19,17 +21,13 @@ impl PlayStatus{
                 "Играть",
                 slint::Color::from_rgb_u8(35, 134, 54),
             ),
-            PlayStatus::Offline => (
-                "Оффлайн",
-                slint::Color::from_rgb_u8(150, 150, 150),
+            PlayStatus::Game => (
+                "Запуск..",
+                slint::Color::from_rgb_u8(255, 99, 99),
             ),
             PlayStatus::Update => (
                 "Обновить",
                 slint::Color::from_rgb_u8(150, 150, 150),
-            ),
-            PlayStatus::Loading => (
-                "Загрузка",
-                slint::Color::from_rgb_u8(255, 99, 99),
             ),
         }
     }
@@ -48,43 +46,92 @@ impl App {
     pub fn set_login_information_output(&self, text: &str) {
         self.ui.global::<Logic>().set_login_information_output(text.into());
     }
-    pub fn play_status(&self, status: PlayStatus, enabled: bool) {
+    pub fn play_status(ui_weak: Weak<MainWindow>, status: PlayStatus, enabled: bool) {
         let (output, color) = status.data();
-        self.ui.global::<Logic>().set_button_play_status(output.into());
-        self.ui.global::<Color>().set_button_play(color.into());
-        self.ui.global::<Enabled>().set_button_play(enabled.into());
+
+        let _ =  slint::invoke_from_event_loop( move || {
+            if let Some(ui) = ui_weak.upgrade() {
+                ui.global::<Logic>().set_button_play_status(output.into());
+                ui.global::<Color>().set_button_play(color.into());
+                ui.global::<Enabled>().set_button_play(enabled.into());
+            }
+        });
     }
+
     pub fn username(&self, username: &str){
         self.ui.global::<Logic>().set_username(username.into());
-    }
+    }/*
     pub fn password(&self, password: &str){
         self.ui.global::<Logic>().set_password(password.into());
     }
-/*
-    //выдод в интерфейс с процент газрузки
-    pub fn emitter_mdp_minecraft(ui_weak: self::Weak<MainWindow>, text: String ) {
-        let _ =  slint::invoke_from_event_loop( move || {
-            if let Some(ui) = ui_weak.upgrade() {
-                ui.global::<Logic>().set_login_information_output(text.into());
+    */
+    pub fn bind_auth(&self) {
+        let ui_weak = self.ui.as_weak();
+        self.ui.global::<Logic>().on_auth_save(move || {
+            let Some(ui) = ui_weak.upgrade() else { return };
+            let user = User { username: ui.global::<Logic>().get_username().to_string() };
+            if let Err(e) = user.save() {
+                eprintln!("не удалось сохранить: {e}");
             }
         });
-    }*/
-    /*
+    }
+
+    //выдод в интерфейс с процент газрузки
+    pub fn emitter_mdp_minecraft(ui_weak: Weak<MainWindow>, text: String ) {
+        let _ =  slint::invoke_from_event_loop( move || {
+            if let Some(ui) = ui_weak.upgrade() {
+                ui.global::<Logic>().set_progress_bar(text.into());
+            }
+        });
+    }
+
     pub fn emitter_console_minecraft(ui_weak: Weak<MainWindow>, text: String ) {
-        let _ =  slint::invoke_from_event_loop( move || {})
-    }*/
+        let _ =  slint::invoke_from_event_loop( move || {
+            if let Some(ui) = ui_weak.upgrade() {
+                ui.global::<Logic>().set_console_log(text.into());
+            }
+        });
+    }
+
+    pub fn hotbar_enabled(ui_weak: Weak<MainWindow>, res: bool) {
+        let _ =  slint::invoke_from_event_loop( move || {
+            if let Some(ui) = ui_weak.upgrade() {
+                ui.global::<Enabled>().set_hotbar(res.into());
+            }
+        });
+    }
+    pub fn button_play_enabled(ui_weak: Weak<MainWindow>, res: bool) {
+        let _ =  slint::invoke_from_event_loop( move || {
+            if let Some(ui) = ui_weak.upgrade() {
+                ui.global::<Enabled>().set_button_play(res.into());
+            }
+        });
+    }
 
 //global Enabled
 
-    pub fn minecraft_run(&self){
+    pub fn minecraft_run(&self) {
         let ui_weak = self.ui.as_weak();
         self.ui.global::<Logic>().on_play_minecrat_process(move || {
+            // блокируем кнопку в момент клика
+            Self::play_status(ui_weak.clone(), PlayStatus::Play, true);
+
             let ui_weak = ui_weak.clone();
             tokio::spawn(async move {
-                let _ = minecraft::minecraft_run(ui_weak).await;
+
+                // Box<dyn Error> не Send, поэтому сразу превращаем в String
+                let result = minecraft::minecraft_run(ui_weak.clone())
+                    .await
+                    .map_err(|e| e.to_string());
+
+                if let Err(err) = result {
+                    eprintln!("minecraft error: {err}");                              // в логи
+                    Self::emitter_mdp_minecraft(ui_weak.clone(), format!("Ошибка: {err}")); // в хотбар
+                }
+
+                Self::play_status(ui_weak, PlayStatus::Play, true);
             });
         });
-        self.ui.global::<Logic>().set_login_information_output("".into());
     }
 
 

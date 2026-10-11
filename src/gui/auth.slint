@@ -74,7 +74,7 @@ export component Auth inherits Rectangle{
             x: 30px;
             y: 330px;
             text <=> Logic.login_information_output;
-            color: Color.error;
+            color: Color.red;
         }
     }
 
@@ -132,7 +132,16 @@ export component Auth inherits Rectangle{
             height: 100%;
             enabled: Enabled.all_auth_button;
             clicked => {
-                debug("auth save button")
+                if (Logic.username.character-count < 3) {
+                    Logic.login_information_output = "Ник слишком короткий (минимум 3)";
+                } else if (Logic.username.character-count > 16) {
+                    Logic.login_information_output = "Ник слишком длинный (максимум 16)";
+                } else {
+                    Logic.login_information_output = "";
+                    Logic.auth_save();
+                    Enabled.all_auth_button = false;
+                    Enabled.global_button = true;
+                }
             }
         }
     }
